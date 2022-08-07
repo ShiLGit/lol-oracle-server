@@ -2,10 +2,7 @@ package dilian.li.loloracleserver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -30,8 +27,20 @@ public class WelcomeController {
         return "Hello World";
     }
 
-    @PostMapping("/submit-teams")
-    public ResponseEntity<String> handleSubmitTeams(@RequestBody Map<String, Object> requestBody){
+    @PostMapping("/make-prediction")
+    public ResponseEntity<String> handleMakePrediction(@RequestBody Map<String, Object> requestBody){
+        System.out.println(requestBody.get("summonerName"));
+        String summoner = (String)requestBody.get("summonerName");
+
+        String apiKey = (String)requestBody.get("apiKey");
+        apiKey = apiKey.replace("=", "");
+
+        String x = dataScraperService.makePrediction(apiKey, summoner);
+        System.out.println("Caught? [" + x + "]");
+        return ResponseEntity.status(HttpStatus.OK).body("fak u");
+    }
+    @PostMapping("/make-prediction-manual")
+    public ResponseEntity<String> handleManualMakePrediction(@RequestBody Map<String, Object> requestBody){
         System.out.println(requestBody.get("teamOne"));
         ArrayList<String> teamOne = (ArrayList<String>)requestBody.get("teamTwo");
         ArrayList <String> teamTwo = (ArrayList<String>)requestBody.get("teamOne");
@@ -51,5 +60,13 @@ public class WelcomeController {
 //        String responseBody = res.bodyToMono(String.class).block();
 //        return responseBody;
         //return "fk u";
+    }
+    @ExceptionHandler(WebClientResponseException.class)
+    private ResponseEntity<String> handleError(WebClientResponseException w){
+        System.out.println("wats up idoit \n" + w.getMessage());
+        if (w.getStatusCode() == HttpStatus.FORBIDDEN){
+            return new ResponseEntity<String>("ERROR: Invalid API key.", w.getStatusCode());
+        }
+        return new ResponseEntity<>(w.getMessage(), w.getStatusCode());
     }
 }

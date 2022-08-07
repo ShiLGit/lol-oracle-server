@@ -27,13 +27,20 @@ public class DataScraperService {
         put("II", 3f);
         put("I", 4f);
     }};
+    public String makePrediction(String apiKey, String summoner) throws WebClientResponseException{
+        TeamData teamOneData = new TeamData();
+        TeamData teamTwoData = new TeamData();
+        populateSummonerIdsFromActiveGame(apiKey, summoner, teamOneData, teamTwoData);
+        populateDataFromBySummonerReq(teamOneData, apiKey);
+        populateDataFromBySummonerReq(teamTwoData, apiKey);
+        return "";
+    }
     public String makePrediction(String apiKey, ArrayList<String> teamOne, ArrayList<String> teamTwo)
     {
         TeamData teamOneData = new TeamData();
         TeamData teamTwoData = new TeamData();
-        populateSummonerIdsFromActiveGame(apiKey, teamOne.get(0), teamOneData, teamTwoData);
-//        setTeamIds(teamOneData, apiKey, teamOne);
-//        setTeamIds(teamTwoData, apiKey, teamTwo);
+        setTeamIds(teamOneData, apiKey, teamOne);
+        setTeamIds(teamTwoData, apiKey, teamTwo);
         populateDataFromBySummonerReq(teamOneData, apiKey);
         populateDataFromBySummonerReq(teamTwoData, apiKey);
         return "";
@@ -105,7 +112,7 @@ public class DataScraperService {
                 String summId = res.get("id").toString();
 
                 if (puuid == null || summId == null) {
-                    throw new WebClientResponseException(400, "From getting puuids: summoner " + s + " DNE animal >:(", null, null, null);
+                    throw new WebClientResponseException("From getting puuids: summoner " + s + " DNE animal >:(",400, HttpStatus.BAD_REQUEST.toString(), null, null, null);
                 }
                 summIds.add(summId);
                 puuids.add(puuid);
@@ -123,13 +130,9 @@ public class DataScraperService {
         LinkedHashMap res = (LinkedHashMap) makeRiotAPIRequest(apiKey, "https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/" + summonerName, LinkedHashMap.class);
         String summId = res.get("id").toString();
 
-        try {
-            resGameInfo = (LinkedHashMap) makeRiotAPIRequest(apiKey, "https://na1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + summId, LinkedHashMap.class);
-        }catch(WebClientResponseException e){
-            System.out.println("NOT IN ACTIVE GAME" + e);
 
-            return;
-        }
+        resGameInfo = (LinkedHashMap) makeRiotAPIRequest(apiKey, "https://na1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + summId, LinkedHashMap.class);
+
         ArrayList<LinkedHashMap> resArray = (ArrayList<LinkedHashMap>)resGameInfo.get("participants");
 
         for (LinkedHashMap data: resArray){
@@ -151,15 +154,8 @@ public class DataScraperService {
     public ResponseEntity validateKey(String apiKey){
         apiKey = apiKey.replace("=", "");
         System.out.println("\nvalidate-key: apikey=[" + apiKey + "]\n");
+        makeRiotAPIRequest(apiKey, "https://americas.api.riotgames.com/riot/account/v1/accounts/by-puuid/b1tEOKTgKzWKM6uRTlhnmz-2aN4jvZFoOkkzDAWZXWj4fQH9O0EF9ghrTDyuMLemLWKYUdPM0ec1IA,", Object.class);
 
-        try{
-            makeRiotAPIRequest(apiKey, "https://americas.api.riotgames.com/riot/account/v1/accounts/by-puuid/b1tEOKTgKzWKM6uRTlhnmz-2aN4jvZFoOkkzDAWZXWj4fQH9O0EF9ghrTDyuMLemLWKYUdPM0ec1IA,", Object.class);
-        }catch(WebClientResponseException e){
-            if (e.getStatusCode() == HttpStatus.FORBIDDEN)
-                return ResponseEntity.status(HttpStatus.OK).body("{\"error\": \"true\", \"message\": \"Error: Invalid API key.\"}");
-            else
-                return ResponseEntity.status(HttpStatus.OK).body("{\"error\": \"true\", \"message\": \"Error: Unknown error has occurred.\"}");
-        }
         return ResponseEntity.status(HttpStatus.OK).body("{\"error\": \"false\", \"message\": \"API key validated.\"}");
     }
 
