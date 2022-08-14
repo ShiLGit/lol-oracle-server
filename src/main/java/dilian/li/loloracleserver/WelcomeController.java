@@ -55,17 +55,18 @@ public class WelcomeController {
         apiKey = apiKey.replace("=", "");
         System.out.println("\nvalidate-key: apikey=[" + apiKey + "]\n");
         return dataScraperService.validateKey(apiKey);
-        //mono is more or less an asynchronous object >> not wat u want, but will give u wat u want in future
-//        WebClient.ResponseSpec res = client.get().uri("https://quoters.apps.pcfone.io/api/random").retrieve();
-//        String responseBody = res.bodyToMono(String.class).block();
-//        return responseBody;
-        //return "fk u";
     }
     @ExceptionHandler(WebClientResponseException.class)
     private ResponseEntity<String> handleError(WebClientResponseException w){
-        System.out.println("wats up idoit \n" + w.getMessage());
+        System.out.println("wats up idoit \n" + w.getMessage() + "\n\n" + w);
+        String errMsg = w.getMessage();
         if (w.getStatusCode() == HttpStatus.FORBIDDEN){
             return new ResponseEntity<String>("ERROR: Invalid API key.", w.getStatusCode());
+        }else if(errMsg.contains("active-games/by-summoner")){
+            return new ResponseEntity<String>("ERROR: Summoner is not in an active game.", w.getStatusCode());
+        }else if (errMsg.contains("summoners/by-name")){
+            String summName = errMsg.split("/")[8];
+            return new ResponseEntity<String>("ERROR: Summoner '" + summName+ "' does not exist.", w.getStatusCode());
         }
         return new ResponseEntity<>(w.getMessage(), w.getStatusCode());
     }
