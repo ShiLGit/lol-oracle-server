@@ -1,5 +1,6 @@
 package dilian.li.loloracleserver;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +14,8 @@ import java.util.Map;
 
 @RestController
 public class WelcomeController {
+    private final String ERROR_CODE_APIKEY = "APIKEY";
     private final DataScraperService dataScraperService;
-
-
 
     @Autowired
     public WelcomeController(DataScraperService dataScraperService){
@@ -60,10 +60,17 @@ public class WelcomeController {
     private ResponseEntity<String> handleError(WebClientResponseException w){
         System.out.println("wats up idoit \n" + w.getMessage() + "\n\n" + w);
         String errMsg = w.getMessage();
+
+        String ERRCAUSE = "errorcause";
         if (w.getStatusCode() == HttpStatus.FORBIDDEN){
-            return new ResponseEntity<String>("ERROR: Invalid API key.", w.getStatusCode());
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(ERRCAUSE, ERROR_CODE_APIKEY);
+            headers.add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, ERRCAUSE);
+            return new ResponseEntity<String>("ERROR: Invalid API key.",headers, w.getStatusCode());
         }else if(errMsg.contains("active-games/by-summoner")){
-            return new ResponseEntity<String>("ERROR: Summoner is not in an active game.", w.getStatusCode());
+            HttpHeaders headers = new HttpHeaders();
+
+            return new ResponseEntity<String>("ERROR: Summoner is not in an active game.", headers, w.getStatusCode());
         }else if (errMsg.contains("summoners/by-name")){
             String summName = errMsg.split("/")[8];
             return new ResponseEntity<String>("ERROR: Summoner '" + summName+ "' does not exist.", w.getStatusCode());

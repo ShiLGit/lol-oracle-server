@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
+/*
+* Populates required input data for ML algorithm by making requests to riot api
+* */
 @Service
 public class DataScraperService {
     @Autowired
