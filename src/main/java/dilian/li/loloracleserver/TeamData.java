@@ -8,7 +8,13 @@ public class TeamData {
     private float avgWR;
     private float avgHotstreak;
     private float rankAvg;
-
+    public TeamData(){
+        puuids = new ArrayList<String>();
+        summonerIds = new ArrayList<String>();
+        avgWR = 0f;
+        avgHotstreak = 0f;
+        rankAvg = 0f;
+    }
     public float getAvgWR() {
         return avgWR;
     }
@@ -52,7 +58,6 @@ public class TeamData {
 
         toReturn += "Len puuids: " + puuids.size() + "\nLen suids: " + summonerIds.size();
         toReturn += "\nRankAvg: " + rankAvg + "\navgWR: " + avgWR + "\navgHotstreak: " + avgHotstreak;
-
         return toReturn;
     }
 }

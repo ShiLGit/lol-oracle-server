@@ -24,6 +24,10 @@ public class DataScraperService {
         put("GOLD", 15f);
         put("PLATINUM", 20f);
         put("DIAMOND", 25f);
+        put("MASTER", 30f);
+        put("GRANDMASTER", 35f);
+        put("CHALLENGER", 40f);
+
         put("IV", 1f);
         put("III", 2f);
         put("II", 3f);
